@@ -1,35 +1,92 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {languages} from './languages.js'
+import {clsx} from 'clsx'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
 
+  // State Values
+  const [currentWord, setCurrentWord] = useState("react")
+  const [guessedLetters, setGuessedLetters] = useState([])
+
+  //Derived Values
+  const wrongGuessCount = 
+    guessedLetters.filter(letter => !currentWord.includes(letter)).length
+
+
+  //Static Values
+  const alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+  function addGuessedLetter(letter) {
+    setGuessedLetters(prevLetters => 
+      prevLetters.includes(letter) ?
+        prevLetters:
+        [...prevLetters, letter])
+  }
+
+  const languageElements = languages.map((lang, index) => {
+    const isLanguageLost = index < wrongGuessCount 
+    const styles = {
+        backgroundColor: lang.backgroundColor,
+        color: lang.color
+      }
+      return (
+        <span 
+          className={`chip ${isLanguageLost ? "lost" : ""}`} 
+          style={styles}
+          key={lang.name}
+          >
+            {lang.name}
+        </span>
+      )
+    }
+  )
+
+  
+  const letterElements = currentWord.split("").map((letter, index) => (
+        <span key={index}>
+          {guessedLetters.includes(letter) ? letter.toUpperCase() : ""}
+        </span>
+      ))
+
+  const keyboardElements = alphabet.split("").map((letter, index) => {
+    const isGuessed = guessedLetters.includes(letter)
+    const isCorrect = isGuessed && currentWord.includes(letter)
+    const isWrong = isGuessed && !currentWord.includes(letter)
+    const className = clsx({
+      correct: isCorrect,
+      wrong: isWrong
+    })
+    return (
+      <button 
+        key={letter}
+        className ={className}
+        onClick={() => addGuessedLetter(letter)}
+        >{letter.toUpperCase()}
+      </button>
+    )
+  })
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <header>
+        <h1>Assembly: Endgame</h1>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis, ex!</p>
+      </header>
+      <section className="game-status">
+        <h2>You Win</h2>
+        <p>Well Done</p>
+      </section>
+      <main>
+        <section className="language-chips">
+          {languageElements}
+        </section>
+        <section className="word">
+          {letterElements}
+        </section>
+        <section className="keyboard">
+          {keyboardElements}
+        </section>
+        <button className="new-game">New Game</button>
+      </main>
     </>
   )
 }
-
-export default App
