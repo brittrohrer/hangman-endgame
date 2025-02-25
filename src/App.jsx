@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {languages} from './languages.js'
 import {clsx} from 'clsx'
+import { getFarewellText } from './utils.js'
 
 export default function App() {
 
@@ -9,12 +10,16 @@ export default function App() {
   const [guessedLetters, setGuessedLetters] = useState([])
 
   //Derived Values
+  const numGuessesLeft = languages.length - 1
   const wrongGuessCount = 
     guessedLetters.filter(letter => !currentWord.includes(letter)).length
   const isGameWon = 
     currentWord.split("").every(letter => guessedLetters.includes(letter))
   const isGameLost = wrongGuessCount >= languages.length
   const isGameOver = isGameWon || isGameLost
+  const lastGuessedLetter = guessedLetters[numGuessesLeft]
+  const isLastGuessIncorrect = lastGuessedLetter && !currentWord.includes(lastGuessedLetter)
+
 
   //Static Values
   const alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -62,7 +67,10 @@ export default function App() {
     return (
       <button 
         key={letter}
-        className ={className}
+        className={className}
+        disabled={isGameOver}
+        aria-disabled={guessedLetters.includes(letter)}
+        aria-label={`Letter ${letter}`}
         onClick={() => addGuessedLetter(letter)}
         >{letter.toUpperCase()}
       </button>
@@ -71,12 +79,18 @@ export default function App() {
 
   const gameStatusClass = clsx("game-status", {
     won: isGameWon,
-    lost: isGameLost
+    lost: isGameLost,
+    farewell: !isGameOver && isLastGuessIncorrect
   })
 
   function renderGameStatus() {
-    if(!isGameOver) {
-      return null
+    if(!isGameOver && isLastGuessIncorrect) {
+      return (
+        <p 
+          className="farewell-message">
+            {getFarewellText(languages[wrongGuessCount - 1].name)}
+        </p>
+      )
     }
     if (isGameWon) {
       return (
@@ -85,7 +99,8 @@ export default function App() {
           <p>Well Done</p>
         </>
       )
-    } else {
+    } 
+    if (isGameLost) {
       return (
         <>
           <h2>Game Over</h2>
@@ -97,24 +112,50 @@ export default function App() {
 
   return (
     <main>
+
       <header>
         <h1>Assembly: Endgame</h1>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis, ex!</p>
       </header>
-      <section className={gameStatusClass}>
-        {renderGameStatus()}
 
+      <section 
+        aria-live="polite"
+        role="status"
+        className={gameStatusClass}>
+        {renderGameStatus()}
       </section>
+
       <section className="language-chips">
           {languageElements}
       </section>
+
       <section className="word">
           {letterElements}
       </section>
+
+      <section 
+        className="sr-only"
+        aria-live="polite" 
+        role="status">
+          <p>
+            {currentWord.includes(lastGuessedLetter) ?
+              `Correct! The letter ${lastGuessedLetter} is in the word` :
+              `Sorry, the letter ${lastGuessedLetter} is not in the word`
+            }
+            You have {numGuessesLeft} attempts left.
+          </p>
+          <p>Current word: {currentWord.split("").map(letter =>
+            guessedLetters.includes(letter) ? letter + "." : "blank.")
+            .join(" ")}
+          </p>
+      </section>
+
       <section className="keyboard">
           {keyboardElements}
       </section>
+
         {isGameOver && <button className="new-game">New Game</button>}
+    
     </main>
   )
 }
