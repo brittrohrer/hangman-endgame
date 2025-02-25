@@ -11,7 +11,10 @@ export default function App() {
   //Derived Values
   const wrongGuessCount = 
     guessedLetters.filter(letter => !currentWord.includes(letter)).length
-
+  const isGameWon = 
+    currentWord.split("").every(letter => guessedLetters.includes(letter))
+  const isGameLost = wrongGuessCount >= languages.length
+  const isGameOver = isGameWon || isGameLost
 
   //Static Values
   const alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -65,28 +68,53 @@ export default function App() {
       </button>
     )
   })
+
+  const gameStatusClass = clsx("game-status", {
+    won: isGameWon,
+    lost: isGameLost
+  })
+
+  function renderGameStatus() {
+    if(!isGameOver) {
+      return null
+    }
+    if (isGameWon) {
+      return (
+        <>
+          <h2>You Win</h2>
+          <p>Well Done</p>
+        </>
+      )
+    } else {
+      return (
+        <>
+          <h2>Game Over</h2>
+          <p>You lose!</p>
+        </>
+      )
+    }
+  }
+
   return (
-    <>
+    <main>
       <header>
         <h1>Assembly: Endgame</h1>
         <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis, ex!</p>
       </header>
-      <section className="game-status">
-        <h2>You Win</h2>
-        <p>Well Done</p>
+      <section className={gameStatusClass}>
+        {renderGameStatus()}
+
       </section>
-      <main>
-        <section className="language-chips">
+      <section className="language-chips">
           {languageElements}
-        </section>
-        <section className="word">
+      </section>
+      <section className="word">
           {letterElements}
-        </section>
-        <section className="keyboard">
+      </section>
+      <section className="keyboard">
           {keyboardElements}
-        </section>
-        <button className="new-game">New Game</button>
-      </main>
-    </>
+      </section>
+        {isGameOver && <button className="new-game">New Game</button>}
+    </main>
   )
 }
