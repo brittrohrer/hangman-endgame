@@ -113,6 +113,10 @@ header > p {
   border-bottom: 1px solid #f9f4da;
 }
 
+.word > span.missed-letter {
+  color: red;
+}
+
 .keyboard {
   display: flex;
   flex-wrap: wrap;

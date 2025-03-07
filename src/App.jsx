@@ -31,6 +31,11 @@ export default function App() {
         [...prevLetters, letter])
   }
 
+
+  function startNewGame() {
+    setCurrentWord(getRandomWord())
+    setGuessedLetters([])
+  }
   const languageElements = languages.map((lang, index) => {
     const isLanguageLost = index < wrongGuessCount 
     const styles = {
@@ -50,11 +55,17 @@ export default function App() {
   )
 
   
-  const letterElements = currentWord.split("").map((letter, index) => (
-        <span key={index}>
-          {guessedLetters.includes(letter) ? letter.toUpperCase() : ""}
+  const letterElements = currentWord.split("").map((letter, index) => {
+        const shouldRevealLetter = isGameLost || guessedLetters.includes(letter)
+        const letterClassName = clsx(
+          isGameLost && !guessedLetters.includes(letter) && "missed-letter"
+        )
+        return (
+        <span key={index} className={letterClassName}>
+          {shouldRevealLetter ? letter.toUpperCase() : ""}
         </span>
-      ))
+      )
+  })
 
   const keyboardElements = alphabet.split("").map((letter, index) => {
     const isGuessed = guessedLetters.includes(letter)
@@ -108,6 +119,7 @@ export default function App() {
         </>
       )
     }
+    return null
   }
 
   return (
@@ -154,7 +166,7 @@ export default function App() {
           {keyboardElements}
       </section>
 
-        {isGameOver && <button className="new-game">New Game</button>}
+        {isGameOver && <button className="new-game" onClick={startNewGame}>New Game</button>}
     
     </main>
   )
